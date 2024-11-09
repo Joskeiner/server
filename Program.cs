@@ -54,6 +54,7 @@ class SimpleWebServer
         NetworkStream stream = client.GetStream();
         StreamReader reader = new StreamReader(stream);
         StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
+        string clientIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
         var config = LoadConfiguration();
         try
         {
@@ -65,10 +66,9 @@ class SimpleWebServer
             if (tokens.Length < 2) return;
             string method = tokens[0];
             string url = tokens[1];
-           Console.WriteLine(" esto tiene url " + url);
-
+        
             Console.WriteLine($"Solicitud {method} {url}");
-
+            LogText(method, url,clientIP );
             // Manejar solicitudes GET y POST
             if (method == "GET")
             {
@@ -102,7 +102,7 @@ class SimpleWebServer
         {
             string fileExtension = Path.GetExtension(filePath);
             string mimeType = GetMimeType(fileExtension);
-            Console.WriteLine("mimeType : " +mimeType);
+
 
             writer.WriteLine("HTTP/1.1 200 OK");
             writer.WriteLine($"Content-Type: {mimeType}");
@@ -161,4 +161,20 @@ class SimpleWebServer
             _ => "application/octet-stream",
         };
     }
+        private static void LogText(string method, string url, string ip)
+        {
+            // Crear un nombre de archivo basado en la fecha actual
+            string logFileName = $"log_peticiones_{DateTime.Now:yyyy-MM-dd}.txt";
+
+            // Crear o abrir el archivo de log en modo de agregar
+            using (StreamWriter logFile = new StreamWriter(logFileName, true))
+            {
+                // Formato de la entrada de log
+                string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - IP: {ip} - Método: {method} - URL: {url}";
+
+                // Escribir en el archivo de log
+                logFile.WriteLine(logEntry);
+            }
+        }
+    
 }
